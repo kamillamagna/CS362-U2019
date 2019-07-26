@@ -30,122 +30,73 @@
 int testBaron(int player, int choice1, struct gameState* post) {
   struct gameState* pre = malloc(sizeof(struct gameState));
   memcpy (pre, post, sizeof(struct gameState));
+
+  // count player estates in hand before Baron play
   int playerEstatesPre = 0;
   for (size_t i = 0; i < post->handCount[player]; i++) if (post->hand[player][i] == estate) playerEstatesPre++;
-  // printf("PRE: \n");
-  // printf("player: %i/%i\n", player, pre->numPlayers);
-  // printf("\tchoice1: %i\n", choice1);
-  // printf("\tnumBuys: %i\n", pre->numBuys);
-  // printf("\tplayerEstates: %i\n", playerEstatesPre);
-  // printf("\tnumCoins: %i\n", pre->coins);
-  // printf("\testateSupply: %i\n", pre->supplyCount[estate]);
-  // printf("\tG->deckCount[player]: %i\n", pre->deckCount[player]);
+
+  // play baron card
   handleBaron(player, choice1, post);
+
+  // count player estates in hand after Baron play
   int playerEstatesPost = 0;
   for (size_t i = 0; i < post->handCount[player]; i++) if (post->hand[player][i] == estate) playerEstatesPost++;
-  // printf("POST: \n");
-  // printf("player: %i/%i\n", player, post->numPlayers);
-  // printf("\tnumBuys: %i\n", post->numBuys);
-  // printf("\tplayerEstates: %i\n", playerEstatesPost);
-  // printf("\tnumCoins: %i\n", post->coins);
-  // printf("\testateSupply: %i\n", post->supplyCount[estate]);
-  // printf("\tG.deckCount[player]: %i\n", post->deckCount[player]);
 
-  printf("player should gain a buy upon Baron play\n");
+  // test outcomes
+  printf("\texpect player to have +1 buy\n");
   asserttrue(post->numBuys, pre->numBuys, "numBuys", pre->numBuys);
   if (choice1) {                       // player choosing to discard an estate
     printf("choice1 (discard an estate) with ");
     if (playerEstatesPre == 0) {       // player has no estates to discard
       printf("no estates to discard:\n");// choice1 should behave like choice2
+
+      // supply estate count should be -1
+      printf("\texpect Victory pile to have one fewer Estate available\n");
+      asserttrue(post->supplyCount[estate], pre->supplyCount[estate]-1, "post->supplyCount[estate]", pre->supplyCount[estate]);
+
+      // player should gain an estate
+      printf("\texpect player to have one more estate in deck\n");
       asserttrue(playerEstatesPost, playerEstatesPre+1, "playerEstates", playerEstatesPre);
     } else {
       printf("1 or more estates in deck to discard:\n");
+
       // player should gain four coins
+      printf("\texpect player to have +4 coins\n");
       asserttrue(post->coins, pre->coins+4, "numCoins", pre->coins);
+
       // player deck should lose an estate
+      printf("\texpect player to have one fewer estate in deck\n");
       asserttrue(playerEstatesPost, playerEstatesPre-1, "playerEstates", playerEstatesPre);
+
       // player deck count should be -1
+      printf("\texpect player to have fewer card in deck\n");
       asserttrue(post->deckCount[player], pre->deckCount[player]-1, "post->deckCount[player]", pre->deckCount[player]);
     }
   } else {                             // player gaining an estate (choice2)
     printf("choice2 (gain an estate) with ");
-    if (pre->supplyCount[estate] == 0) { // no estates left to gain
+    if (pre->supplyCount[estate] == 0) {
       printf("no estates left in supply\n");
-      /* code */
+
+      // no estates left to gain
+      printf("\texpect player to have same number of estates in deck\n");
+      asserttrue(playerEstatesPost, playerEstatesPre, "playerEstates", playerEstatesPre);
     } else {
       printf("1 or more estates left in supply\n");
+
       // supply estate count should be -1
+      printf("\texpect Victory pile to have one fewer Estate available\n");
       asserttrue(post->supplyCount[estate], pre->supplyCount[estate]-1, "post->supplyCount[estate]", pre->supplyCount[estate]);
+
       // player should gain an estate
+      printf("\texpect player to have one more estate in deck\n");
       asserttrue(playerEstatesPost, playerEstatesPre+1, "playerEstates", playerEstatesPre);
+
+      // player should not gain four coins as in choice1
+      printf("\texpect player to have same number of coins\n");
+      asserttrue(post->coins, pre->coins, "numCoins", pre->coins);
     }
   }
 
-  // // test where player has no estates in hand
-  // printf("Testing player with no estates in hand\n");
-  // handleBaron(PLAYER, 1, &G);
-  //
-  // // check that an estate has been added to player's deck
-  // for (size_t i = 0; i < G.deckCount[PLAYER]; i++) {
-  //   if (G.deck[PLAYER][i] == estate) numEstates++;
-  // }
-  // printf("\texpect player to have one estate in deck\n");
-  // asserttrue(numEstates, 1, "numEstates", 0);
-  // printf("\texpect player to have +1 card in deck\n");
-  // asserttrue(G.deckCount[PLAYER], deckCount + 1, "G.deckCount[PLAYER]", deckCount);
-  // // check that player has gained a buy by playing Baron
-  // printf("\texpect player to have +1 buy\n");
-  // asserttrue(G.numBuys, numBuys + 1, "G.numBuys", numBuys);
-  // // check that player has not gained 4 coins
-  // printf("\texpect player to have same number of coins\n");
-  // asserttrue(G.coins, numCoins, "G.coins", numCoins);
-  // // check that number of estates available in Victory pile has decreased by one
-  // printf("\texpect Victory pile to have one fewer Estate available\n");
-  // asserttrue(G.supplyCount[estate], estateSupply - 1, "G.supplyCount[estate]", estateSupply);
-  //
-  // // test where player has estates in hand
-  // G.hand[PLAYER][3] = estate;
-  // G.hand[PLAYER][4] = estate;
-  // numBuys = G.numBuys;
-  // numEstates = 0;
-  // numCoins = G.coins;
-  // printf("Testing player with estates in hand\n");
-  // handleBaron(PLAYER, 1, &G);
-  //
-  // // choice1 --  discard estate to gain 4 coins
-  // // check that an estate has been removed from player's hand
-  // numEstates = 0;
-  // for (size_t i = 0; i < G.handCount[PLAYER]; i++) {
-  //   if (G.hand[PLAYER][i] == estate) numEstates++;
-  // }
-  // printf("\texpect player to have one fewer estate in hand\n");
-  // asserttrue(numEstates, 1, "numEstates", 2);
-  // // check that player has gained a buy by playing Baron
-  // printf("\texpect player to have +1 buy\n");
-  // asserttrue(G.numBuys, numBuys + 2, "G.numBuys", numBuys);
-  // // check that player has gained 4 coins by playing Baron
-  // printf("\texpect player to have +4 coins\n");
-  // asserttrue(G.coins, numCoins + 4, "G.coins", numCoins);
-  //
-  // // test no estates left to gain
-  // printf("Testing no estates left to gain from Supply\n");
-  // numEstates = 0;
-  // for (size_t i = 0; i < G.deckCount[PLAYER]; i++) {
-  //   if (G.deck[PLAYER][i] == estate) numEstates++;
-  // }
-  // G.supplyCount[estate] = 0;
-  // handleBaron(PLAYER, 0, &G); // choice1 = gain estate
-  // int afterEstates = 0;
-  // for (size_t i = 0; i < G.deckCount[PLAYER]; i++) {
-  //   if (G.deck[PLAYER][i] == estate) afterEstates++;
-  // }
-  // // check that player has gained a buy by playing Baron
-  // printf("\texpect player to have +1 buy\n");
-  // asserttrue(G.numBuys, numBuys + 3, "G.numBuys", numBuys);
-  // // check that a player has not gained an estate
-  // printf("\texpect player to have same number of estates in deck\n");
-  // asserttrue(numEstates, afterEstates, "numEstates", numEstates);
-  //
   // // test no state change to other player
   //
   // // test no state change to supply pile, trash pile, kingdom card piles
@@ -157,7 +108,7 @@ int main() {
   int choice1;
 
   printf ("TESTING handleBaron():\n");
-  for (size_t i = 0; i < 2; i++) {
+  for (size_t i = 0; i < 200000; i++) {
     struct gameState G = setupRandomGame();
     int numPlayer = G.numPlayers;
     player = (int)floor(Random() * numPlayer); // randomize current player
