@@ -50,6 +50,10 @@ r1: randomtestcard1
 	./randomtestcard1 > /dev/null
 	gcov -b -f dominion.c > randomtestresults.out
 
+r2: randomtestcard2
+	./randomtestcard2 > /dev/null
+	gcov -b -f dominion.c >> randomtestresults.out
+
 player: player.c interface.o
 	gcc -o player player.c -g  dominion.o rngs.o interface.o $(CFLAGS)
 

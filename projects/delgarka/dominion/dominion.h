@@ -134,7 +134,7 @@ int getWinners(int players[MAX_PLAYERS], struct gameState *state);
 
 // separate card functions
 int handleBaron(int currentPlayer, int choice1, struct gameState* state);
-int handleMinion(int handPos, int choice1, int choice2, int currentPlayer, struct gameState* state);
+int handleMinion(int handPos, int choice1, int currentPlayer, struct gameState* state);
 int handleAmbassador(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state);
 int handleTribute(int currentPlayer, int nextPlayer, struct gameState* state, int* tributeRevealedCards);
 int handleMine(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state);

@@ -1,8 +1,8 @@
 /******************************************************************************
 * Kamille Delgardo
 * CS 362 Software Engineering II
-* Unit Test 4 -- Tribute
-* 14 July 2019
+* Random Testing 3 -- Tribute
+* 28 July 2019
 ******************************************************************************/
 #include "dominion.h"
 #include "dominion_helpers.h"

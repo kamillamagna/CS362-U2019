@@ -874,7 +874,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 
     case minion:
-      handleMinion(handPos, choice1, choice2, currentPlayer, state);
+      handleMinion(handPos, choice1, currentPlayer, state);
 
     case steward:
       if (choice1 == 1)
@@ -1202,18 +1202,18 @@ int handleBaron(int currentPlayer, int choice1, struct gameState* state) {
   return 0;
 }
 
-int handleMinion(int handPos, int choice2, int choice1, int currentPlayer, struct gameState* state) { // INTRODUCED_BUG
+int handleMinion(int handPos, int choice1, int currentPlayer, struct gameState* state) { // INTRODUCED_BUG
   //+1 action
   state->numActions++;
 
   //discard card from hand
   discardCard(handPos, currentPlayer, state, 0);
 
-  if (choice1) {	//+2 coins
+  if (choice1 > 0) {	//+2 coins
     state->coins = state->coins + 2;
   }
 
-  else if (choice2)	{	//discard hand, redraw 4, other players with 5+ cards discard hand and draw 4
+  else {	//discard hand, redraw 4, other players with 5+ cards discard hand and draw 4
     //discard hand
     discardAndDrawFour(handPos, currentPlayer, state);
 

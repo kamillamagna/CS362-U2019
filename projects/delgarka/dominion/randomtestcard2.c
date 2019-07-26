@@ -1,14 +1,16 @@
 /******************************************************************************
 * Kamille Delgardo
 * CS 362 Software Engineering II
-* Unit Test 2 -- Minion
+* Random Testing 2 -- Minion
 * 14 July 2019
 ******************************************************************************/
 #include "dominion.h"
 #include "dominion_helpers.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
+#include <stdlib.h>
 #include "rngs.h"
 
 /* Basic requirements of Minion:
@@ -22,52 +24,78 @@
 * No state change should occur to supply pile, trash pile, victory card piles, kingdom card piles
 */
 
-int main() {
-  int seed = 1000;
-  int numPlayer = 2;
-  int PLAYER = 0;
-  int r;
-  int k[10] = {adventurer, minion, feast, gardens, mine
-             , remodel, smithy, village, baron, great_hall};
-  int deckCount, numCoins, handCount, numActions, discardCount;
-  struct gameState G;
-  printf ("TESTING handleMinion():\n");
-  r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
-  for (size_t i = 0; i < G.handCount[PLAYER]; i++) {
-    G.hand[PLAYER][i] = minion;
+int testMinion(int player, int choice1, struct gameState* post) {
+  struct gameState* pre = malloc(sizeof(struct gameState));
+  memcpy (pre, post, sizeof(struct gameState));
+
+  // play minion card
+  handleMinion(0, choice1, player, post);
+
+  // test outcomes
+  // check numActions increased by 1
+  printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
+  asserttrue(post->numActions, pre->numActions + 1, "numActions", post->numActions);
+
+  if (choice1) {  // player chooses coin/action increase
+    printf("choice1 (gain actions and coins)\n");
+
+    // check numCoins increased by 2
+    printf("\texpect player to have +2 coins\n");
+    asserttrue(post->coins, post->coins + 2, "post->coins", pre->coins);
+
+    // check no state change to other players
+    printf("\texpect other player to have same cards (no state change)\n");
+    for (size_t i = 0; i < pre->numPlayers; i++) {
+      printf("\t player %li\n", i+1);
+      asserttrue(post->handCount[i], pre->handCount[i], "post->handCount[i]", pre->handCount[i]);
+      asserttrue(post->deckCount[i], pre->deckCount[i], "post->deckCount[i]", pre->deckCount[i]);
+      asserttrue(post->discardCount[i], pre->discardCount[i], "post->discardCount[i]", pre->discardCount[i]);
+    }
+  } else { // player chooses discard and draw 4
+    printf("choice2 (players with >= 5 cards in hand discard hand and draw 4)\n");
+
+    // check numCoins remains the same
+    printf("\texpect player to have same number of coins\n");
+    asserttrue(post->coins, pre->coins, "numCoins", post->coins);
+
+    // check other player has +4 cards after play
+    printf("\texpect other player to have +4 cards in hand\n");
+    for (size_t i = 0; i < pre->numPlayers; i++) {
+      if (pre->handCount[i] >= 5) {
+        asserttrue(post->handCount[i], 4, "post->handCount[i]", pre->handCount[i]);
+      } else {
+        // check no state change to other players
+        printf("\texpect other player to have same cards (no state change)\n");
+        for (size_t i = 0; i < pre->numPlayers; i++) {
+          printf("\t player %li\n", i+1);
+          asserttrue(post->handCount[i], pre->handCount[i], "post->handCount[i]", pre->handCount[i]);
+          asserttrue(post->deckCount[i], pre->deckCount[i], "post->deckCount[i]", pre->deckCount[i]);
+          asserttrue(post->discardCount[i], pre->discardCount[i], "post->discardCount[i]", pre->discardCount[i]);
+        }
+      }
+    }
+
   }
+  return 0;
+}
 
-  // test choice1 activated -- +2 coins
-  printf("Testing choice1 activated\n");
-  numActions = G.numActions;
-  numCoins = G.coins;
-  handCount = G.handCount[1];
-  deckCount = G.deckCount[1];
-  discardCount = G.discardCount[1];
-  handleMinion(0, 1, 0, PLAYER, &G);
-  // check numActions increased by 1
-  printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
-  asserttrue(G.numActions, numActions + 1, "G.numActions", numActions);
-  // check numCoins increased by 2
-  printf("\texpect player to have +2 coins\n");
-  asserttrue(G.coins, numCoins + 2, "G.coins", numCoins);
-  // check no state change to other players
-  printf("\texpect other player to have cards (no state change)\n");
-  asserttrue(G.handCount[1], handCount, "G.handCount[1]", handCount);
-  asserttrue(G.deckCount[1], deckCount, "G.deckCount[1]", deckCount);
-  asserttrue(G.discardCount[1], discardCount, "G.discardCount[1]", discardCount);
+int main() {
+  int player;
+  int choice1;
 
-  // test choice2 activated -- discard hand and draw 4 cards
-  handleMinion(0, 0, 1, PLAYER, &G);
-  // check numActions increased by 1
-  printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
-  asserttrue(G.numActions, numActions + 2, "G.numActions", numActions);
-  // check numCoins remains the same
-  printf("\texpect player to have same number of coins\n");
-  asserttrue(G.coins, numCoins, "G.coins", numCoins);
-  // check other player has 4 cards after play
-  handCount = G.handCount[1];
-  printf("\texpect other player to have 4 cards in hand\n");
-  asserttrue(G.handCount[1], 4, "G.handCount[1]", handCount);
+  printf ("TESTING handleMinion():\n");
+  for (size_t i = 0; i < 200000; i++) {
+    struct gameState G = setupRandomGame();
+    int numPlayer = G.numPlayers;
+    player = (int)floor(Random() * numPlayer); // randomize current player
+    choice1 = (int)floor(Random() * 2);// randomize choice1/choice2
+
+    G.hand[player][0] =  minion;
+
+    // randomize # estates left
+    G.supplyCount[estate] = (int)floor(Random() * numPlayer * 10);
+
+    testMinion(player, choice1, &G);
+  }
   return 0;
 }
