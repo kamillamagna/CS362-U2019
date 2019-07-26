@@ -108,7 +108,7 @@ int main() {
   int choice1;
 
   printf ("TESTING handleBaron():\n");
-  for (size_t i = 0; i < 200000; i++) {
+  for (size_t i = 0; i < RAND_TESTS; i++) {
     struct gameState G = setupRandomGame();
     int numPlayer = G.numPlayers;
     player = (int)floor(Random() * numPlayer); // randomize current player

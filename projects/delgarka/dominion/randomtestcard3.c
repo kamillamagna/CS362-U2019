@@ -8,7 +8,9 @@
 #include "dominion_helpers.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
+#include <stdlib.h>
 #include "rngs.h"
 
 /* Basic requirements of Tribute:
@@ -31,34 +33,23 @@
 * No state change should occur to supply pile, trash pile, victory card piles, kingdom card piles
 */
 
-#define P 0
-#define Q 1
-#define N 4
 
-struct gameState setupTributeTest(int* tributeRevealedCards) {
-  struct gameState G;
-  int seed = 1000;
-  int k[10] = {adventurer, minion, tribute, gardens, mine
-             , remodel, smithy, ambassador, baron, great_hall};
-  initializeGame(N, k, seed, &G); // initialize a new game
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
+int testTribute(int player, struct gameState* post, int* tributeRevealedCards) {
+  int target = player == post->numPlayers - 1 ? 0 : player+1;
+  int curseCount = 0;
+  int victoryCount = 0;
+  int treasureCount = 0;
+  int actionCount = 0;
+  struct gameState* pre = malloc(sizeof(struct gameState));
+  memcpy (pre, post, sizeof(struct gameState));
 
-  G.hand[P][0] = tribute;
-  return G;
-}
+  // play Tribute card
+  handleTribute(player, target, post, tributeRevealedCards);
 
-int main() {
-  int tributeRevealedCards[2] = {-1, -1};
-  struct gameState G = setupTributeTest(&tributeRevealedCards);
-  int actionsPre = G.numActions;
-  int coinsPre = G.coins;
-  int cardsPre = G.discardCount[P];
-  printf ("TESTING handleAmbassador():\n");
+
+  // test outcomes
+  printf ("TESTING handleTribute():\n");
   printf("Testing target has 1 in deck to reveal\n");
-  // check case where player has 1 card in deck to reveal
-  G.deck[Q][0] = copper;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
 
   // check case where player has 1 card in discard to reveal
   printf("Testing target has 1 in discard to reveal\n");
@@ -67,142 +58,114 @@ int main() {
   printf("Testing target has no cards to reveal\n");
 
 
-  // cases where target has at least 2 cards to reveal
-  printf("Testing target has 2 or more in deck to reveal\n");
 
-  // case action + curse
-  printf("\texpect action and curse combo to add +2 actions\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = mine;
-  G.deck[Q][1] = curse;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
+  if (pre->deckCount[target] < 2) {
+    /* code */
+  } else { // cases where target has at least 2 cards to reveal
+    printf("Testing target has 2 or more in deck to reveal\n");
+    int k = 2;
+    if (tributeRevealedCards[0] == tributeRevealedCards[1]) k = 1;
+    for (size_t i = 0; i < k; i++) {
+      if (tributeRevealedCards[i] < curse || tributeRevealedCards[i] > treasure_map) {
+        return -1;
+      }
+      else if (tributeRevealedCards[i] == 0) curseCount++; // curse, gain nothing
+      else if (tributeRevealedCards[i] < 4) victoryCount++; // victory, gain +2 cards
+      else if (tributeRevealedCards[i] < 7) treasureCount++; // treasure, gain +2 coins
+      else actionCount++; // action, gain +2 actions
+    }
+  }
 
-  // case action + victory
-  printf("\texpect action and victory combo to add +2 actions, +2 cards\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = steward;
-  G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
-  asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
+  if (actionCount && curseCount) { // case action + curse
+    printf("\texpect action and curse combo to add +2 actions\n");
+    asserttrue(post->numActions, pre->numActions + 2, "G.numActions", pre->numActions);
+  }
+  else if (actionCount && victoryCount) { // case action + victory
+    printf("\texpect action and victory combo to add +2 actions, +2 cards\n");
+    asserttrue(post->numActions, pre->numActions + 2, "G.numActions", pre->numActions);
+    asserttrue(post->handCount[player], pre->handCount[player] + 2, "post->handCount[player]", pre->handCount[player]);
+  }
+  else if (actionCount && treasureCount) { // case action + treasure
+    printf("\texpect action and treasure combo to add +2 actions, +2 coins\n");
+    asserttrue(post->numActions, pre->numActions + 2 , "G.numActions", pre->numActions);
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
+  }
+  else if (curseCount && treasureCount) { // case curse + treasure
+    printf("\texpect curse and treasure combo to add +2 coins\n");
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
+  }
+  else if (curseCount && victoryCount) { // case curse + victory
+    printf("\texpect curse and victory combo to add +2 cards\n");
+    asserttrue(post->handCount[player], pre->handCount[player] + 2, "post->handCount[player]", pre->handCount[player]);
+  }
+  else if (treasureCount && victoryCount) {  // case treasure + victory
+    printf("\texpect treasure and victory combo to add +2 coins and +2 cards\n");
+    asserttrue(post->coins, pre->coins + 2 , "post->coins", pre->coins);
+    asserttrue(post->handCount[player], pre->handCount[player] + 2, "post->handCount[player]", pre->handCount[player]);
+  }
+  else if (treasureCount > 1) { // case treasure + treasure
+    printf("\texpect 2 different treasures to add +4 coins\n");
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
+  }
+  else if (actionCount > 1) { // case action + action
+    printf("\texpect 2 different treasures to add +4 actions\n");
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
+  }
+  else if (victoryCount > 1) { // case victory + victory
+    printf("\texpect 2 different victories to add +4 cards\n");
+    asserttrue(post->handCount, pre->handCount + 4, "handCount", pre->handCount);
+  }
+  else if (curseCount && !victoryCount && !treasureCount && !actionCount) {
+    printf("\texpect 2 curses to have no bonus\n");
+    asserttrue(post->handCount[player], pre->handCount[player], "post->handCount[player]", pre->handCount[player]);
+    asserttrue(post->numActions, pre->numActions, "G.numActions", pre->numActions);
+    asserttrue(post->coins, pre->coins, "post->coins", pre->coins);
+  }
+  else if (!curseCount && victoryCount && !treasureCount && !actionCount) {
+    printf("\texpect 2 same victories to add +2 cards\n");
+    asserttrue(post->handCount[player], pre->handCount[player] + 2, "post->handCount[player]", pre->handCount[player]);
+  }
+  else if (!curseCount && !victoryCount && treasureCount && !actionCount) {
+    printf("\texpect 2 same treasures to add +2 coins\n");
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
+  }
+  else if (!curseCount && !victoryCount && !treasureCount && actionCount) {
+    printf("\texpect 2 same actions to add +2 actions\n");
+    asserttrue(post->numActions, pre->numActions + 2, "G.numActions", pre->numActions);
+  }
+  // // test no state change to other player
+  //
+  // // test no state change to supply pile, trash pile, kingdom card piles
+  return 0;
+}
 
-  // case action + treasure
-  printf("\texpect action and treasure combo to add +2 actions, +2 coins\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = steward;
-  G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.numActions, actionsPre + 2 , "G.numActions", actionsPre);
-  asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
+int main() {
+  int player;
+  int choice1;
 
-  // case curse + treasure
-  printf("\texpect curse and treasure combo to add +2 coins\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = curse;
-  G.deck[Q][1] = gold;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
+  printf ("TESTING handleTribute():\n");
+  for (size_t i = 0; i < RAND_TESTS; i++) {
+    PlantSeeds(-1);                      // seed based on internal clock
+    int seed = floor(Random() * MAX_RAND); // seed between 0 and 999999
+    SelectStream(seed);                  // select stream from gen'd streams
+    PutSeed((long)seed);
 
-  // case curse + victory
-  printf("\texpect curse and victory combo to add +2 cards\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = curse;
-  G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
+    struct gameState G = setupRandomGame();
+    int numPlayer = G.numPlayers;
+    int tributeRevealedCards[] = {-1, -1};
+    player = (int)floor(Random() * numPlayer); // randomize current player
+    int target = player == numPlayer - 1 ? 0 : player+1;
 
-  // case treasure + victory
-  printf("\texpect treasure and victory combo to add +2 coins and +2 cards\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = silver;
-  G.deck[Q][1] = estate;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.coins, coinsPre + 2 , "G.coins", coinsPre);
-  asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
+    G.hand[player][0] = tribute; // make tribute next-played card
 
-  // case treasure + treasure
-  printf("\texpect 2 same treasures to add +2 coins\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = silver;
-  G.deck[Q][1] = silver;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
+    // randomize # cards in tribute deck, discard
+    G.deckCount[target] = (int)floor(Random() * 11);
+    G.discardCount[target] = (int)floor(Random() * 11);
+    // randomize cards in tribute deck, discard
+    for (size_t i = 0; i < G.deckCount[target]; i++) G.deckCount[i] = (int)floor(Random() * treasure_map);
+    for (size_t i = 0; i < G.discardCount[target]; i++) G.discardCount[i] = (int)floor(Random() * treasure_map);
 
-  // case action + action
-  printf("\texpect 2 same actions to add +2 actions\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = minion;
-  G.deck[Q][1] = minion;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
-
-  // case victory + victory
-  printf("\texpect 2 same victories to add +2 cards\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = duchy;
-  G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
-
-  // case curse + curse
-  printf("\texpect 2 curses to have no bonus\n");
-  G = setupTributeTest(&tributeRevealedCards);
-  tributeRevealedCards[0] = -1;
-  tributeRevealedCards[1] = -1;
-  actionsPre = G.numActions;
-  coinsPre = G.coins;
-  cardsPre = G.handCount[P];
-  G.deck[Q][0] = curse;
-  G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
-  asserttrue(G.handCount[P], cardsPre, "G.handCount[P]", cardsPre);
-  asserttrue(G.numActions, actionsPre, "G.numActions", actionsPre);
-  asserttrue(G.coins, coinsPre, "G.coins", coinsPre);
+    testTribute(player, &G, tributeRevealedCards);
+  }
   return 0;
 }

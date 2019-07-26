@@ -35,24 +35,19 @@ randomtestcard1: randomtestcard1.c dominion.o rngs.o asserttrue.c
 randomtestcard2: randomtestcard2.c dominion.o rngs.o asserttrue.c
 	gcc -o randomtestcard2 -g randomtestcard2.c dominion.o rngs.o asserttrue.c $(CFLAGS)
 
-randomtestcard2: randomtestcard2.c dominion.o rngs.o asserttrue.c
-	gcc -o randomtestcard2 -g randomtestcard2.c dominion.o rngs.o asserttrue.c $(CFLAGS)
+randomtestcard3: randomtestcard3.c dominion.o rngs.o asserttrue.c
+	gcc -o randomtestcard3 -g randomtestcard3.c dominion.o rngs.o asserttrue.c $(CFLAGS)
 
+# NOTE: building a file with all printed results of tests will crash computer,
+# so they have been sent to garbage collection at /dev/null
 randomtestresults: randomtestcard1 randomtestcard2 randomtestcard3
-	./randomtestcard1 &> randomtestresults.out
-	gcov -b -f dominion.c >> randomtestresults.out
-	./randomtestcard2 &> randomtestresults.out
-	gcov -b -f dominion.c >> randomtestresults.out
-	./randomtestcard3 &> randomtestresults.out
-	gcov -b -f dominion.c >> randomtestresults.out
-
-r1: randomtestcard1
 	./randomtestcard1 > /dev/null
 	gcov -b -f dominion.c > randomtestresults.out
-
-r2: randomtestcard2
 	./randomtestcard2 > /dev/null
 	gcov -b -f dominion.c >> randomtestresults.out
+	./randomtestcard3 > /dev/null
+	gcov -b -f dominion.c >> randomtestresults.out
+	cat dominion.c.gcov >> randomtestresults.out
 
 player: player.c interface.o
 	gcc -o player player.c -g  dominion.o rngs.o interface.o $(CFLAGS)
