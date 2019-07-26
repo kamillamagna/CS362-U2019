@@ -8,7 +8,9 @@
 #include "dominion_helpers.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
+#include <stdlib.h>
 #include "rngs.h"
 
 /* Basic requirements of Baron:
@@ -25,60 +27,60 @@
 * No state change should occur to supply pile, trash pile, kingdom card piles
 */
 
-int main() {
-  int seed = 1000;
-  int numPlayer = 2;
-  int PLAYER = 0;
-  int r;
-  int k[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-  int deckCount, numBuys, numEstates, numCoins, estateSupply;
-  struct gameState G;
+int testBaron(int player, int choice1, struct gameState* post) {
+  struct gameState* pre = malloc(sizeof(struct gameState));
+  memcpy (pre, post, sizeof(struct gameState));
+  int playerEstatesPre = 0;
+  for (size_t i = 0; i < post->handCount[player]; i++) if (post->hand[player][i] == estate) playerEstatesPre++;
+  // printf("PRE: \n");
+  // printf("player: %i/%i\n", player, pre->numPlayers);
+  // printf("\tchoice1: %i\n", choice1);
+  // printf("\tnumBuys: %i\n", pre->numBuys);
+  // printf("\tplayerEstates: %i\n", playerEstatesPre);
+  // printf("\tnumCoins: %i\n", pre->coins);
+  // printf("\testateSupply: %i\n", pre->supplyCount[estate]);
+  // printf("\tG->deckCount[player]: %i\n", pre->deckCount[player]);
+  handleBaron(player, choice1, post);
+  int playerEstatesPost = 0;
+  for (size_t i = 0; i < post->handCount[player]; i++) if (post->hand[player][i] == estate) playerEstatesPost++;
+  // printf("POST: \n");
+  // printf("player: %i/%i\n", player, post->numPlayers);
+  // printf("\tnumBuys: %i\n", post->numBuys);
+  // printf("\tplayerEstates: %i\n", playerEstatesPost);
+  // printf("\tnumCoins: %i\n", post->coins);
+  // printf("\testateSupply: %i\n", post->supplyCount[estate]);
+  // printf("\tG.deckCount[player]: %i\n", post->deckCount[player]);
 
-  // set up game and player hand
-  printf ("TESTING handleBaron():\n");
-  for (size_t i = 0; i < 2; i++) {
-    G.hand[PLAYER][0] =  baron;
-
-    // randomize kingdom cards
-    setKingdomCards(k);
-    for (size_t i = 0; i < 10; i++) {
-      printf("k[%i]: %i\n", i, k[i]);
+  printf("player should gain a buy upon Baron play\n");
+  asserttrue(post->numBuys, pre->numBuys, "numBuys", pre->numBuys);
+  if (choice1) {                       // player choosing to discard an estate
+    printf("choice1 (discard an estate) with ");
+    if (playerEstatesPre == 0) {       // player has no estates to discard
+      printf("no estates to discard:\n");// choice1 should behave like choice2
+      asserttrue(playerEstatesPost, playerEstatesPre+1, "playerEstates", playerEstatesPre);
+    } else {
+      printf("1 or more estates in deck to discard:\n");
+      // player should gain four coins
+      asserttrue(post->coins, pre->coins+4, "numCoins", pre->coins);
+      // player deck should lose an estate
+      asserttrue(playerEstatesPost, playerEstatesPre-1, "playerEstates", playerEstatesPre);
+      // player deck count should be -1
+      asserttrue(post->deckCount[player], pre->deckCount[player]-1, "post->deckCount[player]", pre->deckCount[player]);
     }
-
-    // randomize # of players
-
-
-    // randomize choice1/choice2
-
-    // initialize game with random vals
-
-
-    r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
-    for (size_t i = 3; i < G.handCount[PLAYER]; i++) {
-      G.hand[PLAYER][i] = adventurer;
+  } else {                             // player gaining an estate (choice2)
+    printf("choice2 (gain an estate) with ");
+    if (pre->supplyCount[estate] == 0) { // no estates left to gain
+      printf("no estates left in supply\n");
+      /* code */
+    } else {
+      printf("1 or more estates left in supply\n");
+      // supply estate count should be -1
+      asserttrue(post->supplyCount[estate], pre->supplyCount[estate]-1, "post->supplyCount[estate]", pre->supplyCount[estate]);
+      // player should gain an estate
+      asserttrue(playerEstatesPost, playerEstatesPre+1, "playerEstates", playerEstatesPre);
     }
-    G.hand[PLAYER][0] = baron;
-    G.hand[PLAYER][1] = baron;
-    G.hand[PLAYER][2] = baron;
-    deckCount = G.deckCount[PLAYER];
-    numBuys = G.numBuys;
-    numEstates = 0;
-    numCoins = G.coins;
-    estateSupply = G.supplyCount[estate];
   }
-  // r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
-  // for (size_t i = 3; i < G.handCount[PLAYER]; i++) {
-  //   G.hand[PLAYER][i] = adventurer;
-  // }
-  // G.hand[PLAYER][0] = baron;
-  // G.hand[PLAYER][1] = baron;
-  // G.hand[PLAYER][2] = baron;
-  // deckCount = G.deckCount[PLAYER];
-  // numBuys = G.numBuys;
-  // numEstates = 0;
-  // numCoins = G.coins;
-  // estateSupply = G.supplyCount[estate];
-  //
+
   // // test where player has no estates in hand
   // printf("Testing player with no estates in hand\n");
   // handleBaron(PLAYER, 1, &G);
@@ -147,5 +149,26 @@ int main() {
   // // test no state change to other player
   //
   // // test no state change to supply pile, trash pile, kingdom card piles
+  return 0;
+}
+
+int main() {
+  int player;
+  int choice1;
+
+  printf ("TESTING handleBaron():\n");
+  for (size_t i = 0; i < 2; i++) {
+    struct gameState G = setupRandomGame();
+    int numPlayer = G.numPlayers;
+    player = (int)floor(Random() * numPlayer); // randomize current player
+    choice1 = (int)floor(Random() * 2);// randomize choice1/choice2
+
+    G.hand[player][0] =  baron;
+
+    // randomize # estates left
+    G.supplyCount[estate] = (int)floor(Random() * numPlayer * 10);
+
+    testBaron(player, choice1, &G);
+  }
   return 0;
 }

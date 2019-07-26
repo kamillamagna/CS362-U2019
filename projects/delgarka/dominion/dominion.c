@@ -219,6 +219,26 @@ int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
   return 0;
 }
 
+struct gameState setupRandomGame() {
+  int numPlayer;
+  int k[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+  struct gameState G;                  // return value from setupRandomGame()
+  PlantSeeds(-1);                      // seed based on internal clock
+  int seed = floor(Random() * MAX_RAND); // seed between 0 and 999999
+  SelectStream(seed);                  // select stream from gen'd streams
+  PutSeed((long)seed);                 //
+
+  setKingdomCards(k);                  // randomize kingdom cards
+
+
+  numPlayer = (int)floor(Random() * 3);// randomize # of players...
+  numPlayer += 2;                      // ... between 2 and 4
+
+  initializeGame(numPlayer, k, seed, &G); // initialize new game w/ random vars
+
+  return G;
+}
+
 int shuffle(int player, struct gameState *state) {
 
 
