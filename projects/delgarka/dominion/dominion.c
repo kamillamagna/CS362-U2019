@@ -34,6 +34,27 @@ int* kingdomCards(int k1, int k2, int k3, int k4, int k5, int k6, int k7,
   return k;
 }
 
+int inArray(int* arrToCheck, int target, int len) {
+  for (size_t i = 0; i < len; i++)  if (arrToCheck[i] == target) return 1;
+  return 0;
+}
+
+void setKingdomCards(int* s) {
+  PlantSeeds(-1);
+  int selectedSeed = floor(Random() * MAX_RAND);
+  SelectStream(selectedSeed);
+  PutSeed((long)selectedSeed);
+  int card;
+  for (size_t i = 0; i < 10; i++) {
+    card = (int)floor(Random() * treasure_map);
+    while (inArray(s, card, (int)i)) card = (int)floor(Random() * treasure_map);
+    s[i] = card;
+  }
+
+  kingdomCards(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9]);
+  return s;
+}
+
 int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
 		   struct gameState *state) {
 
