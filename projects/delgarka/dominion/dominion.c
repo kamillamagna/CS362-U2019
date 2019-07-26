@@ -46,7 +46,7 @@ void setKingdomCards(int* s) {
   PutSeed((long)selectedSeed);
   int card;
   for (size_t i = 0; i < 10; i++) {
-    card = (int)floor(Random() * treasure_map);
+    card = (int)floor(Random() * 18) + 7; // choose from available action cards
     while (inArray(s, card, (int)i)) card = (int)floor(Random() * treasure_map);
     s[i] = card;
   }
@@ -229,7 +229,6 @@ struct gameState setupRandomGame() {
   PutSeed((long)seed);                 //
 
   setKingdomCards(k);                  // randomize kingdom cards
-
 
   numPlayer = (int)floor(Random() * 3);// randomize # of players...
   numPlayer += 2;                      // ... between 2 and 4

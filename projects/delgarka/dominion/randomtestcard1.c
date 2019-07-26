@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include "rngs.h"
+#include <time.h>
 
 /* Basic requirements of Baron:
 * Player should gain one buy
