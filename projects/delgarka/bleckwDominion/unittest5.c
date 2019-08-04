@@ -46,22 +46,22 @@ int main() {
   // choice1 is not a copper or a silver
   G.hand[P][0] = estate;
   printf("\texpect calling mine on Victory card to fail\n");
-  r = handleMine(estate, gold, 0, P, &G);
-  asserttrue(r, -1, "return value of handleMine()", 0);
+  r = _mine(estate, gold, 0, P, &G);
+  asserttrue(r, -1, "return value of _mine()", 0);
 
   // choice2 is not a valid card
   G.hand[P][0] = copper;
   printf("\texpect calling mine on Victory card to fail\n");
-  r = handleMine(copper, treasure_map+1, 0, P, &G);
-  asserttrue(r, -1, "return value of handleMine()", 0);
+  r = _mine(copper, treasure_map+1, 0, P, &G);
+  asserttrue(r, -1, "return value of _mine()", 0);
 
   // player trying to trade for a treasure more than one level up
   G.hand[P][0] = copper;
   printf("\texpect calling mine on Victory card to fail\n");
-  r = handleMine(copper, gold, 0, P, &G);
-  asserttrue(r, -1, "return value of handleMine()", 0);
+  r = _mine(copper, gold, 0, P, &G);
+  asserttrue(r, -1, "return value of _mine()", 0);
 
-  printf("Testing valid call to handleMine()\n");
+  printf("Testing valid call to _mine()\n");
 
   // check choice1 added to player's discard pile
   int choice1 = copper;
@@ -78,7 +78,7 @@ int main() {
     if (G.hand[P][i] == choice1) handCount++;
     else if (G.hand[P][i] == choice2) bonusPre++;
   }
-  handleMine(choice1, silver, 0, P, &G);
+  _mine(choice1, silver, 0, P, &G);
   for (size_t i = 0; i < G.discardCount[P]; i++) if (G.discard[P][i] == choice1) postDiscard++;
   for (size_t i = 0; i < G.handCount[P]; i++) {
     if (G.hand[P][i] == choice1) postHand++;

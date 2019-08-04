@@ -54,11 +54,11 @@ int main() {
   int actionsPre = G.numActions;
   int coinsPre = G.coins;
   int cardsPre = G.discardCount[P];
-  printf ("TESTING handleAmbassador():\n");
+  printf ("TESTING _tribute():\n");
   printf("Testing target has 1 in deck to reveal\n");
   // check case where player has 1 card in deck to reveal
   G.deck[Q][0] = copper;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
 
   // check case where player has 1 card in discard to reveal
   printf("Testing target has 1 in discard to reveal\n");
@@ -80,7 +80,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = mine;
   G.deck[Q][1] = curse;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
 
   // case action + victory
@@ -93,7 +93,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = steward;
   G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
   asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
 
@@ -107,7 +107,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = steward;
   G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.numActions, actionsPre + 2 , "G.numActions", actionsPre);
   asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
 
@@ -121,7 +121,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = curse;
   G.deck[Q][1] = gold;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
 
   // case curse + victory
@@ -134,7 +134,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = curse;
   G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
 
   // case treasure + victory
@@ -147,7 +147,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = silver;
   G.deck[Q][1] = estate;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.coins, coinsPre + 2 , "G.coins", coinsPre);
   asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
 
@@ -161,7 +161,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = silver;
   G.deck[Q][1] = silver;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.coins, coinsPre + 2, "G.coins", coinsPre);
 
   // case action + action
@@ -174,7 +174,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = minion;
   G.deck[Q][1] = minion;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.numActions, actionsPre + 2, "G.numActions", actionsPre);
 
   // case victory + victory
@@ -187,7 +187,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = duchy;
   G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.handCount[P], cardsPre + 2, "G.handCount[P]", cardsPre);
 
   // case curse + curse
@@ -200,7 +200,7 @@ int main() {
   cardsPre = G.handCount[P];
   G.deck[Q][0] = curse;
   G.deck[Q][1] = duchy;
-  handleTribute(Q, P, &G, &tributeRevealedCards);
+  _tribute(Q, P, &G, &tributeRevealedCards);
   asserttrue(G.handCount[P], cardsPre, "G.handCount[P]", cardsPre);
   asserttrue(G.numActions, actionsPre, "G.numActions", actionsPre);
   asserttrue(G.coins, coinsPre, "G.coins", coinsPre);

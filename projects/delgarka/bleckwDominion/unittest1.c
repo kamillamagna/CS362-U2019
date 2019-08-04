@@ -36,7 +36,7 @@ int main() {
   struct gameState G;
 
   // set up game and player hand
-  printf ("TESTING handleBaron():\n");
+  printf ("TESTING _baron():\n");
   r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
   for (size_t i = 3; i < G.handCount[PLAYER]; i++) {
     G.hand[PLAYER][i] = adventurer;
@@ -52,7 +52,7 @@ int main() {
 
   // test where player has no estates in hand
   printf("Testing player with no estates in hand\n");
-  handleBaron(PLAYER, 1, &G);
+  _baron(PLAYER, 1, &G);
 
   // check that an estate has been added to player's deck
   for (size_t i = 0; i < G.deckCount[PLAYER]; i++) {
@@ -79,7 +79,7 @@ int main() {
   numEstates = 0;
   numCoins = G.coins;
   printf("Testing player with estates in hand\n");
-  handleBaron(PLAYER, 1, &G);
+  _baron(PLAYER, 1, &G);
 
   // choice1 --  discard estate to gain 4 coins
   // check that an estate has been removed from player's hand
@@ -103,7 +103,7 @@ int main() {
     if (G.deck[PLAYER][i] == estate) numEstates++;
   }
   G.supplyCount[estate] = 0;
-  handleBaron(PLAYER, 0, &G); // choice1 = gain estate
+  _baron(PLAYER, 0, &G); // choice1 = gain estate
   int afterEstates = 0;
   for (size_t i = 0; i < G.deckCount[PLAYER]; i++) {
     if (G.deck[PLAYER][i] == estate) afterEstates++;

@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include "rngs.h"
 
+#ifndef
+#define RAND_TESTS 200
+#endif
+
 /* Basic requirements of Minion:
 * Player should gain one action
 * Player should have two options
@@ -29,7 +33,7 @@ int testMinion(int player, int choice1, struct gameState* post) {
   memcpy (pre, post, sizeof(struct gameState));
 
   // play minion card
-  handleMinion(0, choice1, player, post);
+  _minion(0, choice1, player, post);
 
   // test outcomes
   // check numActions increased by 1

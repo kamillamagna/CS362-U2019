@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include "rngs.h"
 
+#ifndef RAND_TESTS
+#define RAND_TESTS 200
+#endif
+
 /* Basic requirements of Tribute:
 * Tribute card should apply to player to immediate left
 * Target should reveal top 2 cards in their deck
@@ -44,7 +48,7 @@ int testTribute(int player, struct gameState* post, int* tributeRevealedCards) {
   memcpy (pre, post, sizeof(struct gameState));
 
   // play Tribute card
-  handleTribute(player, target, post, tributeRevealedCards);
+  _tribute(player, target, post, tributeRevealedCards);
 
 
   // test outcomes

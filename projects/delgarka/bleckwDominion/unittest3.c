@@ -44,7 +44,7 @@ struct gameState setupAmbassadorTest(int numGardens) {
 int main() {
   int r, deckCount, discardCount, numGardensPre[N], numGardensPost[N];
   struct gameState G = setupAmbassadorTest(4);
-  printf ("TESTING handleAmbassador():\n");
+  printf ("TESTING _ambassador():\n");
 
   // testing discard 2 gardens with at least 2 in hand
   printf("Testing choice2 discard 2 with 2 in hand\n");
@@ -58,7 +58,7 @@ int main() {
   }
 
   // discard 2 copies of garden card at position 1 in in hand
-  handleAmbassador(gardens, 2, 4, P, &G);
+  _ambassador(gardens, 2, 4, P, &G);
   for (size_t i = 0; i < N; i++) {
     for (size_t j = 0; j < G.handCount[i]; j++) if (G.hand[i][j] == gardens) numGardensPost[i]++;
   }
@@ -77,13 +77,13 @@ int main() {
   // testing discard 2 gardens with 1 in hand
   printf("\texpect attempt discard 2 with 1 in hand to fail\n");
   G = setupAmbassadorTest(1);
-  r = handleAmbassador(gardens, 2, 4, P, &G);
+  r = _ambassador(gardens, 2, 4, P, &G);
   asserttrue(r, -1, "handleAmbassador return value", 0);
 
   // testing attempt to discard -1 gardens
   printf("\texpect attempt discard < 0 to fail\n");
   G = setupAmbassadorTest(4);
-  r = handleAmbassador(gardens, -1, 4, P, &G);
+  r = _ambassador(gardens, -1, 4, P, &G);
   asserttrue(r, -1, "handleAmbassador return value", 0);
 
   // testing play with 0 gardens available in Supply

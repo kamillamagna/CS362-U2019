@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int asserttrue(int actual, int expected, char* title, int pre) {
   printf("\tTesting %s ... ", title);
   if (expected == actual) printf("PASS\n");

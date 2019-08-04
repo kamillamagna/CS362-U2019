@@ -14,6 +14,10 @@
 #include "rngs.h"
 #include <time.h>
 
+#ifndef RAND_TESTS
+#define RAND_TESTS 200
+#endif
+
 /* Basic requirements of Baron:
 * Player should gain one buy
 * Player should have 2 choices
@@ -37,7 +41,7 @@ int testBaron(int player, int choice1, struct gameState* post) {
   for (size_t i = 0; i < post->handCount[player]; i++) if (post->hand[player][i] == estate) playerEstatesPre++;
 
   // play baron card
-  handleBaron(player, choice1, post);
+  _baron(player, choice1, post);
 
   // count player estates in hand after Baron play
   int playerEstatesPost = 0;

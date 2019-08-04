@@ -31,7 +31,7 @@ int main() {
              , remodel, smithy, village, baron, great_hall};
   int deckCount, numCoins, handCount, numActions, discardCount;
   struct gameState G;
-  printf ("TESTING handleMinion():\n");
+  printf ("TESTING _minion():\n");
   r = initializeGame(numPlayer, k, seed, &G); // initialize a new game
   for (size_t i = 0; i < G.handCount[PLAYER]; i++) {
     G.hand[PLAYER][i] = minion;
@@ -44,7 +44,7 @@ int main() {
   handCount = G.handCount[1];
   deckCount = G.deckCount[1];
   discardCount = G.discardCount[1];
-  handleMinion(0, 1, 0, PLAYER, &G);
+  _minion(0, 1, 0, PLAYER, &G);
   // check numActions increased by 1
   printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
   asserttrue(G.numActions, numActions + 1, "G.numActions", numActions);
@@ -58,7 +58,7 @@ int main() {
   asserttrue(G.discardCount[1], discardCount, "G.discardCount[1]", discardCount);
 
   // test choice2 activated -- discard hand and draw 4 cards
-  handleMinion(0, 0, 1, PLAYER, &G);
+  _minion(0, 0, 1, PLAYER, &G);
   // check numActions increased by 1
   printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
   asserttrue(G.numActions, numActions + 2, "G.numActions", numActions);
