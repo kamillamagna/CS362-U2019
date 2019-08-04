@@ -6,6 +6,9 @@
 #define MAX_HAND 500
 #define MAX_DECK 500
 
+#define MAX_RAND 999999
+#define RAND_TESTS 10
+
 #define MAX_PLAYERS 4
 
 #define DEBUG 0
@@ -81,11 +84,15 @@ struct gameState* newGame();
 int* kingdomCards(int k1, int k2, int k3, int k4, int k5, int k6, int k7,
 		  int k8, int k9, int k10);
 
+void setKingdomCards();
+
+int inArray(int* arrToCheck, int target, int len);
+
 int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
 		   struct gameState *state);
 /* Responsible for initializing all supplies, and shuffling deck and
    drawing starting hands for all players.  Check that 10 cards selected
-   are in fact (different) kingdom cards, and that numPlayers is valid. 
+   are in fact (different) kingdom cards, and that numPlayers is valid.
 
 Cards not in game should initialize supply position to -1 */
 

@@ -34,6 +34,28 @@ int* kingdomCards(int k1, int k2, int k3, int k4, int k5, int k6, int k7,
    k[9] = k10;
    return k;
 }
+int inArray(int* arrToCheck, int target, int len) {
+  for (size_t i = 0; i < len; i++)  if (arrToCheck[i] == target) return 1;
+  return 0;
+}
+
+void setKingdomCards(int* s) {
+  PlantSeeds(-1);
+  int selectedSeed = floor(Random() * MAX_RAND);
+  SelectStream(selectedSeed);
+  PutSeed((long)selectedSeed);
+  int card;
+  for (size_t i = 0; i < 10; i++) {
+    card = (int)floor(Random() * 18) + 7; // choose from available action cards
+    while (inArray(s, card, (int)i)) card = (int)floor(Random() * treasure_map);
+    s[i] = card;
+  }
+
+  kingdomCards(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9]);
+  return s;
+}
+
+
 
 int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
       struct gameState *state) {
@@ -197,6 +219,25 @@ int initializeGame(int numPlayers, int kingdomCards[10], int randomSeed,
    updateCoins(state->whoseTurn, state, 0);
 
    return 0;
+}
+
+struct gameState setupRandomGame() {
+  int numPlayer;
+  int k[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+  struct gameState G;                  // return value from setupRandomGame()
+  PlantSeeds(-1);                      // seed based on internal clock
+  int seed = floor(Random() * MAX_RAND); // seed between 0 and 999999
+  SelectStream(seed);                  // select stream from gen'd streams
+  PutSeed((long)seed);                 //
+
+  setKingdomCards(k);                  // randomize kingdom cards
+
+  numPlayer = (int)floor(Random() * 3);// randomize # of players...
+  numPlayer += 2;                      // ... between 2 and 4
+
+  initializeGame(numPlayer, k, seed, &G); // initialize new game w/ random vars
+
+  return G;
 }
 
 int shuffle(int player, struct gameState *state) {
@@ -657,6 +698,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
    int temphand[MAX_HAND];// moved above the if statement
    int drawntreasure=0;
    int cardDrawn;
+   int tributeRevealedCards[2] = {-1, -1};
    int z = 0;// this is the counter for the temp hand
    if (nextPlayer > (state->numPlayers - 1)){
       nextPlayer = 0;
@@ -859,7 +901,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
          return 0;
 
       case tribute:
-         return _tribute(currentPlayer, nextPlayer, state);
+         return _tribute(currentPlayer, nextPlayer, state, tributeRevealedCards);
 
       case ambassador:
          return _ambassador(choice1, choice2, handPos, currentPlayer, state);
@@ -1140,7 +1182,7 @@ int _baron(int currentPlayer, int choice1, struct gameState* state)
 
    return 0;
 }
-int _minion(int choice2, int choice1, int handPos, int currentPlayer, struct gameState* state)
+int _minion(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state)
 {
    //+1 action
    state->numActions++;
@@ -1153,7 +1195,7 @@ int _minion(int choice2, int choice1, int handPos, int currentPlayer, struct gam
    else if (choice2)		//discard hand, redraw 4, other players with 5+ cards discard hand and draw 4
    {
       //discard hand
-      while(numHandCards(state) >= 0)
+      while(numHandCards(state) > 0) // BUG FOUND (was >= instead of >)
       {
          discardCard(handPos, currentPlayer, state, 0);
       }
@@ -1246,9 +1288,8 @@ int _ambassador(int choice1, int choice2, int handPos, int currentPlayer, struct
    return 0;
 }
 
-int _tribute(int currentPlayer, int nextPlayer, struct gameState* state)
+int _tribute(int currentPlayer, int nextPlayer, struct gameState* state, int* tributeRevealedCards)
 {
-   int tributeRevealedCards[2] = {-1, -1};
    if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
       if (state->deckCount[nextPlayer] > 0){
          tributeRevealedCards[0] = state->deck[nextPlayer][state->deckCount[nextPlayer]-1];

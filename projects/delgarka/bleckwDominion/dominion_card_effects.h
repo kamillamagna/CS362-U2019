@@ -7,7 +7,7 @@ int _minion(int choice2, int choice1, int handPos, int currentPlayer, struct gam
 
 int _ambassador(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state);
 
-int _tribute(int currentPlayer, int nextPlayer, struct gameState* state);
+int _tribute(int currentPlayer, int nextPlayer, struct gameState* state, int* tributeRevealedCards);
 
 int _mine(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state);
 

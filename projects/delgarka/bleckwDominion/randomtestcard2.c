@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include "rngs.h"
 
-#ifndef
+#ifndef RAND_TESTS
 #define RAND_TESTS 200
 #endif
 
@@ -31,9 +31,9 @@
 int testMinion(int player, int choice1, struct gameState* post) {
   struct gameState* pre = malloc(sizeof(struct gameState));
   memcpy (pre, post, sizeof(struct gameState));
-
   // play minion card
-  _minion(0, choice1, player, post);
+  int choice2 = choice1 ? 0 : 1;
+  _minion(choice1, choice2, 0, player, post);
 
   // test outcomes
   // check numActions increased by 1

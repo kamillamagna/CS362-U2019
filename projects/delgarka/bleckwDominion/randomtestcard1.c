@@ -124,7 +124,7 @@ int main() {
     // randomize # estates left
     G.supplyCount[estate] = (int)floor(Random() * numPlayer * 10);
 
-    testBaron(player, choice1, &G);
+    _baron(player, choice1, &G);
   }
   return 0;
 }
