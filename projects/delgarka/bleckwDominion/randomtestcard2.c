@@ -38,14 +38,14 @@ int testMinion(int player, int choice1, struct gameState* post) {
   // test outcomes
   // check numActions increased by 1
   printf("\texpect player to have +1 actions (+2 from card, -1 from act of playing)\n");
-  asserttrue(post->numActions, pre->numActions + 1, "numActions", post->numActions);
+  asserttrue(post->numActions, pre->numActions + 1, "numActions", pre->numActions);
 
   if (choice1) {  // player chooses coin/action increase
     printf("choice1 (gain actions and coins)\n");
 
     // check numCoins increased by 2
     printf("\texpect player to have +2 coins\n");
-    asserttrue(post->coins, post->coins + 2, "post->coins", pre->coins);
+    asserttrue(post->coins, pre->coins + 2, "post->coins", pre->coins);
 
     // check no state change to other players
     printf("\texpect other player to have same cards (no state change)\n");
@@ -60,7 +60,7 @@ int testMinion(int player, int choice1, struct gameState* post) {
 
     // check numCoins remains the same
     printf("\texpect player to have same number of coins\n");
-    asserttrue(post->coins, pre->coins, "numCoins", post->coins);
+    asserttrue(post->coins, pre->coins, "numCoins", pre->coins);
 
     // check other player has +4 cards after play
     printf("\texpect other player to have +4 cards in hand\n");

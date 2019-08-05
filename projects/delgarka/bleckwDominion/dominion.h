@@ -7,7 +7,7 @@
 #define MAX_DECK 500
 
 #define MAX_RAND 999999
-#define RAND_TESTS 10
+#define RAND_TESTS 4
 
 #define MAX_PLAYERS 4
 

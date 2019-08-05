@@ -100,6 +100,13 @@ randomtestresults: randomtestcard1 randomtestcard2 randomtestcard3
 	gcov -b -f dominion.c >> randomtestresults.out
 	./randomtestcard3 > /dev/null
 
+readrandomtestresults: randomtestcard1 randomtestcard2 randomtestcard3
+	./randomtestcard1 > randomtestresults.out
+	gcov -b -f dominion.c >> randomtestresults.out
+	./randomtestcard2 >> randomtestresults.out
+	gcov -b -f dominion.c >> randomtestresults.out
+	./randomtestcard3 >> randomtestresults.out
+
 
 player: player.c interface.o
 	gcc -o player player.c -g  dominion.o rngs.o interface.o $(CFLAGS)

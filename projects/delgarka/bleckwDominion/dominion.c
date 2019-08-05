@@ -1182,7 +1182,7 @@ int _baron(int currentPlayer, int choice1, struct gameState* state)
 
    return 0;
 }
-int _minion(int choice1, int choice2, int handPos, int currentPlayer, struct gameState* state)
+int _minion(int choice2, int choice1, int handPos, int currentPlayer, struct gameState* state)
 {
    //+1 action
    state->numActions++;
